@@ -14,5 +14,5 @@ group :development, :test do
 end
 
 
-gem 'cassandra-driver'
 gem 'activesupport'
+gem 'cassandra-driver'
