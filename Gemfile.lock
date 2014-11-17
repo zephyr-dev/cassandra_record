@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    cassandra_record (0.0.3)
+    cassandra_record (0.0.5)
       activesupport
       cassandra-driver
 

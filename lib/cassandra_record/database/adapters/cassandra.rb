@@ -1,5 +1,6 @@
 require 'cassandra'
 require 'singleton'
+require 'active_support/hash_with_indifferent_access'
 
 module CassandraRecord
   module Database
@@ -38,7 +39,7 @@ module CassandraRecord
         private
 
         def cluster_connection
-          ::Cassandra.cluster(connection_configuration)
+          ::Cassandra.cluster(connection_configuration.symbolize_keys)
         end
 
         def connection_configuration
