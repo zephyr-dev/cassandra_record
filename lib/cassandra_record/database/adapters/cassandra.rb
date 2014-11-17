@@ -9,10 +9,6 @@ module CassandraRecord
 
         attr_reader :keyspace
 
-        def session
-          @session ||= ::Cassandra.cluster.connect(@keyspace)
-        end
-
         def use(keyspace_name)
           @session = nil
           @keyspace = keyspace_name
@@ -27,11 +23,26 @@ module CassandraRecord
         end
 
         def cluster
-          ::Cassandra.cluster.connect
+          cluster_connection.connect
         end
 
         def session
-          @session ||= ::Cassandra.cluster.connect(@keyspace)
+          @session ||= cluster_connection.connect(@keyspace)
+        end
+
+        def configuration(&block)
+          yield(connection_configuration) if block_given?
+          connection_configuration
+        end
+
+        private
+
+        def cluster_connection
+          ::Cassandra.cluster(connection_configuration)
+        end
+
+        def connection_configuration
+          @connection_configuration ||= {}
         end
 
       end
