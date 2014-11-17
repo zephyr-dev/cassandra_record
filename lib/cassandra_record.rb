@@ -1,5 +1,4 @@
 require 'rubygems'
-require 'pry'
 
 require 'cassandra_record/base'
 require 'cassandra_record/statement'
