@@ -16,11 +16,27 @@ module CassandraRecord
         end
 
         def prepare(cql)
-          session.prepare(cql)
+          retry_count = 0
+          begin
+            session.prepare(cql)
+          rescue ::Cassandra::Error
+            if (retry_count += 1) < MAX_RETRIES
+              @session = nil
+              session.prepare(cql)
+            end
+          end
         end
 
         def execute(cql, *args)
-          session.execute(cql, *args)
+          retry_count = 0
+          begin
+            session.execute(cql, *args)
+          rescue ::Cassandra::Error
+            if (retry_count += 1) < MAX_RETRIES
+              @session = nil
+              session.execute(cql, *args)
+            end
+          end
         end
 
         def cluster
@@ -37,6 +53,8 @@ module CassandraRecord
         end
 
         private
+
+        MAX_RETRIES = 4
 
         def cluster_connection
           ::Cassandra.cluster(connection_configuration.symbolize_keys)

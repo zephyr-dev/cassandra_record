@@ -5,7 +5,7 @@ module CassandraRecord
         cql = base_where_query(table_name)
 
         if options.present?
-          cql << 'WHERE'
+          cql << 'WHERE '
           cql << parse_where_clause_options(options)
         end
 
