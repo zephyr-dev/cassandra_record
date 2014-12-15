@@ -10,7 +10,6 @@ module CassandraRecord
         end
 
         cql << ';'
-        db.execute(cql)
       end
 
       def create(table_name, columns, values)
@@ -18,16 +17,9 @@ module CassandraRecord
 INSERT INTO #{table_name} (#{columns.join(", ")})
 VALUES (#{value_placeholders(values).join(", ")})
         CQL
-
-        insert_statement = db.prepare(cql)
-        db.execute(insert_statement, *values)
       end
 
       private
-
-      def db
-        Database::Adapters::Cassandra.instance
-      end
 
       def value_placeholders(values)
         [].tap do |arr|

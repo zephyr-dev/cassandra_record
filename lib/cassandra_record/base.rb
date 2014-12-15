@@ -21,17 +21,33 @@ module CassandraRecord
     end
 
     def where(options={})
-      results = Statement.where(table_name, options).map do |attributes|
+      results = db.execute(where_statement(options)).map do |attributes|
         self.class.new(attributes)
       end
     end
 
     def create
-      Statement.create(table_name, columns, values)
+      db.execute(insert_statement, *values)
       self
     end
 
     private
+
+    def db
+      Database::Adapters::Cassandra.instance
+    end
+
+    def where_statement(options={})
+      Statement.where(table_name, options)
+    end
+
+    def insert_statement
+      @insert_statement ||= db.prepare(insert_cql)
+    end
+
+    def insert_cql
+      Statement.create(table_name, columns, values)
+    end
 
     def table_name
       ActiveSupport::Inflector.tableize(self.class.name).gsub(/\//, '_')
