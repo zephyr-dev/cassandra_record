@@ -12,14 +12,22 @@ module CassandraRecord
         cql << ';'
       end
 
-      def create(table_name, columns, values)
+      def create(table_name, columns, values, options={})
         cql = <<-CQL
 INSERT INTO #{table_name} (#{columns.join(", ")})
 VALUES (#{value_placeholders(values).join(", ")})
         CQL
+
+        cql.tap do |statement|
+          statement << ttl(options[:ttl]) if options.has_key?(:ttl)
+        end
       end
 
       private
+
+      def ttl(secs)
+        "USING TTL #{secs}"
+      end
 
       def value_placeholders(values)
         [].tap do |arr|

@@ -26,8 +26,8 @@ module CassandraRecord
       end
     end
 
-    def create
-      db.execute(insert_statement, *values)
+    def create(options={})
+      db.execute(insert_statement(options), *values)
       self
     end
 
@@ -41,12 +41,12 @@ module CassandraRecord
       Statement.where(table_name, options)
     end
 
-    def insert_statement
-      @insert_statement ||= db.prepare(insert_cql)
+    def insert_statement(options={})
+      @insert_statement ||= db.prepare(insert_cql(options))
     end
 
-    def insert_cql
-      Statement.create(table_name, columns, values)
+    def insert_cql(options={})
+      Statement.create(table_name, columns, values, options)
     end
 
     def table_name

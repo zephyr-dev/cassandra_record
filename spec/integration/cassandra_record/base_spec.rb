@@ -29,6 +29,34 @@ describe CassandraRecord::Base do
       expect(result['id']).to eq(99)
       expect(result['name']).to eq('turkey')
     end
+
+    context "with TTL options" do
+      class TestRecord < CassandraRecord::Base
+        def create
+          options = { ttl: 1 }
+          super(options)
+        end
+      end
+
+      it "persists a record" do
+        record = TestRecord.create(id: 300, name: 'I\'m going away')
+
+        select = <<-CQL
+        SELECT * from #{keyspace}.test_records
+        WHERE id = 300;
+        CQL
+
+        results = db.execute(select)
+        expect(results.count).to eq(1)
+
+        # sucky, but we need to wait for Cassandra
+        # to remove the record to assert the TTL is working
+        sleep 1
+
+        results = db.execute(select)
+        expect(results.count).to eq(0)
+      end
+    end
   end
 
   describe ".where" do
