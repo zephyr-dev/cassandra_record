@@ -30,11 +30,11 @@ module CassandraRecord
         def execute(cql, *args)
           retry_count = 0
           begin
-            session.execute(cql, *args)
+            session.execute(cql, arguments: args)
           rescue ::Cassandra::Error
             if (retry_count += 1) < MAX_RETRIES
               @session = nil
-              session.execute(cql, *args)
+              session.execute(cql, arguments: args)
             end
           end
         end

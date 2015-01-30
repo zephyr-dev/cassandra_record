@@ -12,6 +12,14 @@ module CassandraRecord
       def where(attributes={})
         new.where(attributes)
       end
+
+      def configure
+        yield configuration
+      end
+
+      def configuration
+        @@configuration ||= Configuration.new
+      end
     end
 
     attr_accessor :attributes
@@ -34,7 +42,7 @@ module CassandraRecord
     private
 
     def db
-      Database::Adapters::Cassandra.instance
+      self.class.configuration.database_adapter
     end
 
     def where_statement(options={})
@@ -66,6 +74,14 @@ module CassandraRecord
         attributes[method]
       else
         super(method, *args, &block)
+      end
+    end
+
+    class Configuration
+      attr_accessor :database_adapter
+
+      def initialize(adapter=Database::Adapters::Cassandra.instance)
+        database_adapter = adapter
       end
     end
 

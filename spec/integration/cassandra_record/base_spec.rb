@@ -4,6 +4,12 @@ describe CassandraRecord::Base do
   let(:db) { RSpec.configuration.db }
   let(:keyspace)  { RSpec.configuration.keyspace }
 
+  before do
+    CassandraRecord::Base.configure do |configuration|
+      configuration.database_adapter = ::CassandraRecord::Database::Adapters::Cassandra.instance
+    end
+  end
+
   class TestRecord < CassandraRecord::Base; end
 
   describe ".create" do
@@ -100,4 +106,34 @@ describe CassandraRecord::Base do
     end
   end
 
+  describe "configuring the database adapter" do
+    let(:some_adapter) { double(:some_adapter) }
+
+    before do
+      allow(some_adapter).to receive(:execute) { [] }
+
+      CassandraRecord::Base.configure do |configuration|
+        configuration.database_adapter = some_adapter
+      end
+    end
+
+    context ".create" do
+      before do
+        allow(some_adapter).to receive(:prepare)
+      end
+
+      it "uses the configured database adapter" do
+        TestRecord.create(name: 'things')
+        expect(some_adapter).to have_received(:prepare)
+        expect(some_adapter).to have_received(:execute)
+      end
+    end
+
+    context ".where" do
+      it "uses the configured database adapter" do
+        TestRecord.where(name: 'things')
+        expect(some_adapter).to have_received(:execute)
+      end
+    end
+  end
 end
