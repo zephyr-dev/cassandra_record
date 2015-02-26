@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    cassandra_record (0.0.6)
+    cassandra_record (0.0.7)
       activesupport
       cassandra-driver
 
@@ -17,8 +17,8 @@ GEM
     byebug (2.7.0)
       columnize (~> 0.3)
       debugger-linecache (~> 1.2)
-    cassandra-driver (1.0.0.rc.1)
-      ione (~> 1.2.0.pre9)
+    cassandra-driver (2.1.0)
+      ione (~> 1.2)
     coderay (1.1.0)
     columnize (0.8.9)
     debugger-linecache (1.2.0)
