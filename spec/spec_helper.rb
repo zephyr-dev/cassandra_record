@@ -16,8 +16,9 @@ RSpec.configure do |config|
   db = CassandraRecord::Database::Adapters::Cassandra.instance
 
   config.add_setting :db
-  config.db = db
   config.add_setting :keyspace
+
+  config.db = db
   config.keyspace = 'test_space'  # CassandraRecord::Database::Adapters::Cassandra.instance.keyspace
 
   create_keyspace = <<-CQL
