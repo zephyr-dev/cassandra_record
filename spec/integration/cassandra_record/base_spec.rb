@@ -24,8 +24,8 @@ describe CassandraRecord::Base do
       record = TestRecord.create(id: 99, name: 'turkey')
 
       select = <<-CQL
-        SELECT * from #{keyspace}.test_records
-        WHERE id = 99;
+      SELECT * from #{keyspace}.test_records
+      WHERE id = 99;
       CQL
 
       results = db.execute(select)
@@ -45,7 +45,7 @@ describe CassandraRecord::Base do
       end
 
       it "persists a record" do
-        record = TestRecord.create(id: 300, name: 'I\'m going away')
+        TestRecord.create(id: 300, name: 'I\'m going away')
 
         select = <<-CQL
         SELECT * from #{keyspace}.test_records
@@ -62,6 +62,44 @@ describe CassandraRecord::Base do
         results = db.execute(select)
         expect(results.count).to eq(0)
       end
+    end
+  end
+
+  describe ".batch_create" do
+    context "with TTL options" do
+      it "persists a record" do
+        TestRecord.batch_create([{ id: 99, name: 'turkey' }, { id: 100, name: 'buffalo' }], ttl: 1)
+
+        select = <<-CQL
+        SELECT * from #{keyspace}.test_records
+        CQL
+
+        results = db.execute(select)
+        expect(results.count).to eq 2
+
+        sleep 2
+
+        results = db.execute(select)
+        expect(results.count).to eq 0
+      end
+    end
+
+    it "returns an array of the records it created" do
+      records = TestRecord.batch_create([{ id: 99, name: 'turkey' }, { id: 100, name: 'buffalo' }])
+      expect(records.first.name).to eq "turkey"
+      expect(records.last.name).to eq "buffalo"
+    end
+
+    it "persists the records" do
+      TestRecord.batch_create([{ id: 99, name: 'turkey' }, { id: 100, name: 'buffalo' }])
+
+      select = <<-CQL
+      SELECT * from #{keyspace}.test_records
+      CQL
+
+      results = db.execute(select)
+      expect(results.count).to eq 2
+      expect(results.first['id']).to eq 99
     end
   end
 

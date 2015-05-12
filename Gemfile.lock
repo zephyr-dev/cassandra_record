@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    cassandra_record (0.0.7)
+    cassandra_record (0.1.0)
       activesupport
       cassandra-driver
 
@@ -61,9 +61,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  activesupport
   bundler (~> 1.7)
-  cassandra-driver
   cassandra_record!
   pry
   pry-byebug

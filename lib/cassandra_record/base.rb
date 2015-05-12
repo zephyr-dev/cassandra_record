@@ -9,6 +9,17 @@ module CassandraRecord
         new(attributes).create
       end
 
+      def batch_create(array_of_attributes, options={})
+        batch = configuration.database_adapter.session.batch do |batch|
+          array_of_attributes.map do |attr|
+            batch.add(new(attr).send(:insert_statement, attr, options), attr.values)
+          end
+        end
+
+        configuration.database_adapter.session.execute(batch)
+        array_of_attributes.map { |attr| new(attr) }
+      end
+
       def where(attributes={})
         new.where(attributes)
       end
@@ -29,13 +40,13 @@ module CassandraRecord
     end
 
     def where(options={})
-      results = db.execute(where_statement(options)).map do |attributes|
+      db.execute(where_statement(options)).map do |attributes|
         self.class.new(attributes)
       end
     end
 
     def create(options={})
-      db.execute(insert_statement(options), *values)
+      db.execute(insert_statement(attributes, options), *attributes.values)
       self
     end
 
@@ -49,24 +60,16 @@ module CassandraRecord
       Statement.where(table_name, options)
     end
 
-    def insert_statement(options={})
-      @insert_statement ||= db.prepare(insert_cql(options))
+    def insert_statement(attributes, options={})
+      @insert_statement ||= db.prepare(insert_cql(attributes, options))
     end
 
-    def insert_cql(options={})
-      Statement.create(table_name, columns, values, options)
+    def insert_cql(attributes, options={})
+      Statement.create(table_name, attributes.keys, attributes.values, options)
     end
 
     def table_name
       ActiveSupport::Inflector.tableize(self.class.name).gsub(/\//, '_')
-    end
-
-    def columns
-      attributes.keys
-    end
-
-    def values
-      attributes.values
     end
 
     def method_missing(method, *args, &block)
@@ -81,7 +84,7 @@ module CassandraRecord
       attr_accessor :database_adapter
 
       def initialize(adapter=Database::Adapters::Cassandra.instance)
-        database_adapter = adapter
+        adapter
       end
     end
 
