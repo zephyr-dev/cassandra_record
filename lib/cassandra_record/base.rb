@@ -20,6 +20,24 @@ module CassandraRecord
         array_of_attributes.map { |attr| new(attr) }
       end
 
+      # combines results from all pages
+      # into a single result set
+      def all(attributes={})
+        paginated_result_set = where(attributes)
+        rows = []
+
+        loop do
+          paginated_result_set.each do |row|
+            rows << row
+            break if paginated_result_set.last_page?
+            paginated_result_set = paginated_result_set.next_page
+          end
+        end
+
+        rows
+      end
+
+      # returns a paginatable collection
       def where(attributes={})
         new.where(attributes)
       end
@@ -40,13 +58,17 @@ module CassandraRecord
     end
 
     def where(options={})
-      db.execute(where_statement(options)).map do |attributes|
+      execution_options = {}
+      execution_options[:page_size] = options.delete(:page_size) if options.has_key?(:page_size)
+      db.execute(where_statement(options), options).map do |attributes|
         self.class.new(attributes)
       end
     end
 
     def create(options={})
-      db.execute(insert_statement(attributes, options), *attributes.values)
+      default_options = { arguments: attributes.values }
+      execution_options = default_options.merge(options)
+      db.execute(insert_statement(attributes, options), execution_options)
       self
     end
 

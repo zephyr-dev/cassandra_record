@@ -103,25 +103,63 @@ describe CassandraRecord::Base do
     end
   end
 
+  describe ".all" do
+    let(:insert_1) { [9090, 'burgers'] }
+    let(:insert_2) { [8080, 'hot dogs'] }
+    let(:insert_3) { [7070, 'spaghetti'] }
+    let(:insert_4) { [6060, 'tacos'] }
+    let(:insert_5) { [5050, 'birthday cake'] }
+
+    let(:inserts) do
+      [ insert_1,
+        insert_2,
+        insert_3,
+        insert_4,
+        insert_5
+      ]
+    end
+
+    before do
+      inserts.each do |record|
+        insert_statement = <<-CQL
+          INSERT INTO #{keyspace}.test_records (id, name)
+          VALUES (#{record[0]}, '#{record[1]}');
+        CQL
+        db.execute(insert_statement)
+      end
+    end
+
+    it "combines results from all pages into a single result set" do
+      results = TestRecord.where(page_size: 2)
+      expect(results.count).to eq(5)
+
+      results.each do |result|
+        expect(inserts).to include([result.id, result.name])
+      end
+    end
+  end
+
   describe ".where" do
     context "with results" do
-      before do
-        insert_1 = <<-CQL
-          INSERT INTO #{keyspace}.test_records (id, name)
-          VALUES (9090, 'burgers');
-        CQL
-        insert_2 = <<-CQL
-          INSERT INTO #{keyspace}.test_records (id, name)
-          VALUES (8080, 'nachos');
-        CQL
-        insert_3 = <<-CQL
-          INSERT INTO #{keyspace}.test_records (id, name)
-          VALUES (7070, 'nachos');
-        CQL
+      let(:insert_1) { [9090, 'burgers'] }
+      let(:insert_2) { [8080, 'nachos'] }
+      let(:insert_3) { [7070, 'nachos'] }
 
-        db.execute(insert_1)
-        db.execute(insert_2)
-        db.execute(insert_3)
+      let(:inserts) do
+        [ insert_1,
+          insert_2,
+          insert_3
+        ]
+      end
+
+      before do
+        inserts.each do |record|
+          insert_statement = <<-CQL
+          INSERT INTO #{keyspace}.test_records (id, name)
+          VALUES (#{record[0]}, '#{record[1]}');
+          CQL
+          db.execute(insert_statement)
+        end
       end
 
       it "returns an array of hydrated results" do
