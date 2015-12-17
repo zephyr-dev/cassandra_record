@@ -21,9 +21,9 @@ module CassandraRecord
           end
         end
 
-        def execute(cql, *args)
+        def execute(cql, opts={})
           rescue_with_reset_and_retry do
-            session.execute(cql, arguments: args)
+            session.execute(cql, opts)
           end
         end
 
