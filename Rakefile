@@ -1,10 +1,17 @@
 require "bundler/gem_tasks"
 require 'cassandra_record'
 
-task :environment do
+begin
+  require 'rspec/core/rake_task'
+  RSpec::Core::RakeTask.new(:spec)
+  task :default => :spec
+rescue LoadError
+  # no rspec available
+  # end
+  puts "Unable to load RSpec tasks"
 end
 
-namespace :cassandra_record do 
+namespace :cassandra_record do
   namespace :structure do
     desc "Loads your structures"
     task :load => :environment do

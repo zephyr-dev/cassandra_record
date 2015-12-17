@@ -61,11 +61,11 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bundler (~> 1.7)
+  bundler (~> 1.9)
   cassandra_record!
   pry
   pry-byebug
   pry-doc
-  rake (~> 10.0)
+  rake
   rspec
   rspec-mocks-extensions
