@@ -107,15 +107,23 @@ describe CassandraRecord::Base do
     let(:insert_1) { [9090, 'burgers'] }
     let(:insert_2) { [8080, 'hot dogs'] }
     let(:insert_3) { [7070, 'spaghetti'] }
-    let(:insert_4) { [6060, 'tacos'] }
-    let(:insert_5) { [5050, 'birthday cake'] }
+    let(:insert_4) { [6060, 'birthday cake'] }
+    let(:insert_5) { [5050, 'tacos'] }
+    let(:insert_6) { [4040, 'tacos'] }
+    let(:insert_7) { [3030, 'tacos'] }
+    let(:insert_8) { [2020, 'tacos'] }
+    let(:insert_9) { [1010, 'tacos'] }
 
     let(:inserts) do
       [ insert_1,
         insert_2,
         insert_3,
         insert_4,
-        insert_5
+        insert_5,
+        insert_6,
+        insert_7,
+        insert_8,
+        insert_9
       ]
     end
 
@@ -129,12 +137,36 @@ describe CassandraRecord::Base do
       end
     end
 
-    it "combines results from all pages into a single result set" do
-      results = TestRecord.where(page_size: 2)
-      expect(results.count).to eq(5)
+    context "with an empty query" do
+      it "combines results from all pages into a single result set" do
+        results = TestRecord.all("", page_size: 2)
+        expect(results.count).to eq(9)
 
-      results.each do |result|
-        expect(inserts).to include([result.id, result.name])
+        results.each do |result|
+          expect(inserts).to include([result.id, result.name])
+        end
+      end
+    end
+
+    context "with a string query" do
+      it "combines results from all pages into a single result set" do
+        results = TestRecord.all("name = 'tacos'", page_size: 2)
+        expect(results.count).to eq(5)
+
+        results.each do |result|
+          expect(inserts).to include([result.id, result.name])
+        end
+      end
+    end
+
+    context "with a symbol query" do
+      it "combines results from all pages into a single result set" do
+        results = TestRecord.all({ name: "tacos" }, page_size: 2)
+        expect(results.count).to eq(5)
+
+        results.each do |result|
+          expect(inserts).to include([result.id, result.name])
+        end
       end
     end
   end

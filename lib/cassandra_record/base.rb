@@ -22,24 +22,13 @@ module CassandraRecord
 
       # combines results from all pages
       # into a single result set
-      def all(attributes={})
-        paginated_result_set = where(attributes)
-        rows = []
-
-        loop do
-          paginated_result_set.each do |row|
-            rows << row
-            break if paginated_result_set.last_page?
-            paginated_result_set = paginated_result_set.next_page
-          end
-        end
-
-        rows
+      def all(query={}, options={})
+        new.all(query, options)
       end
 
       # returns a paginatable collection
-      def where(attributes={})
-        new.where(attributes)
+      def where(query={}, options={})
+        new.where(query)
       end
 
       def configure
@@ -57,10 +46,25 @@ module CassandraRecord
       @attributes = HashWithIndifferentAccess.new(attributes)
     end
 
-    def where(options={})
-      execution_options = {}
-      execution_options[:page_size] = options.delete(:page_size) if options.has_key?(:page_size)
-      db.execute(where_statement(options), options).map do |attributes|
+    def all(query={}, options={})
+      paginated_result_set = db.execute(where_statement(query), options)
+
+      results = []
+
+      loop do
+        paginated_result_set.each do |attributes|
+          results << self.class.new(attributes)
+        end
+
+        break if paginated_result_set.last_page?
+        paginated_result_set = paginated_result_set.next_page
+      end
+
+      results
+    end
+
+    def where(query={}, options={})
+      db.execute(where_statement(query), options).map do |attributes|
         self.class.new(attributes)
       end
     end

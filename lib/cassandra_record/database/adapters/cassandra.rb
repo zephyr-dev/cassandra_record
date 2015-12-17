@@ -23,7 +23,7 @@ module CassandraRecord
 
         def execute(cql, opts={})
           rescue_with_reset_and_retry do
-            session.execute(cql, opts)
+            results = session.execute(cql, opts)
           end
         end
 
